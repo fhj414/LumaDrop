@@ -1,12 +1,4 @@
 import crypto from "crypto";
-import dns from "node:dns";
-import { Agent } from "undici";
-
-dns.setDefaultResultOrder("ipv4first");
-
-const ipv4Dispatcher = new Agent({
-  connect: { family: 4 }
-});
 
 export async function sendSmsCode(phone: string, code: string) {
   const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -48,7 +40,6 @@ export async function sendEmailCode(email: string, code: string) {
   try {
     response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      dispatcher: ipv4Dispatcher,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json"
