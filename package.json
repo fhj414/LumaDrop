@@ -1,0 +1,46 @@
+{
+  "name": "lumadrop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "NODE_OPTIONS=\"--use-openssl-ca --dns-result-order=ipv4first\" next dev",
+    "build": "NODE_OPTIONS=\"--use-openssl-ca --dns-result-order=ipv4first\" prisma generate && NODE_OPTIONS=\"--use-openssl-ca --dns-result-order=ipv4first\" next build",
+    "start": "NODE_OPTIONS=\"--use-openssl-ca --dns-result-order=ipv4first\" next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@prisma/client": "^6.6.0",
+    "@radix-ui/react-slot": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.7.4",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.488.0",
+    "next": "15.5.9",
+    "next-themes": "^0.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.2.0",
+    "undici": "^7.25.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "prisma": "^6.6.0",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 35% 97%;
+    --foreground: 220 18% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 18% 10%;
+    --primary: 164 70% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 28 30% 92%;
+    --secondary-foreground: 220 18% 10%;
+    --muted: 38 25% 91%;
+    --muted-foreground: 220 8% 44%;
+    --accent: 198 48% 90%;
+    --accent-foreground: 210 22% 18%;
+    --destructive: 0 68% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 20% 84%;
+    --input: 36 20% 84%;
+    --ring: 164 70% 32%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 220 18% 8%;
+    --foreground: 44 38% 96%;
+    --card: 220 16% 12%;
+    --card-foreground: 44 38% 96%;
+    --primary: 164 66% 46%;
+    --primary-foreground: 220 18% 8%;
+    --secondary: 220 12% 18%;
+    --secondary-foreground: 44 38% 96%;
+    --muted: 220 11% 18%;
+    --muted-foreground: 220 7% 68%;
+    --accent: 202 24% 22%;
+    --accent-foreground: 44 38% 96%;
+    --destructive: 0 70% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 11% 22%;
+    --input: 220 11% 22%;
+    --ring: 164 66% 46%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply border border-white/45 bg-white/70 shadow-soft backdrop-blur-2xl dark:border-white/10 dark:bg-card/72;
+  }
+
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .image-skeleton {
+    @apply relative overflow-hidden bg-muted;
+  }
+
+  .image-skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/10;
+  }
+}
