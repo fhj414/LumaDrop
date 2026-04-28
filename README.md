@@ -190,8 +190,8 @@ EMAIL_FROM="LumaDrop <hello@your-domain.com>"
 
 ```bash
 OPENROUTER_API_KEY="..."
-# 可选：默认 google/gemini-2.0-flash-lite
-OPENROUTER_MODEL="google/gemini-2.0-flash-lite"
+# 可选：默认 google/gemini-2.5-flash-lite
+OPENROUTER_MODEL="google/gemini-2.5-flash-lite"
 # 可选：用于 OpenRouter 统计与风控
 OPENROUTER_HTTP_REFERER="https://your-domain.com"
 OPENROUTER_APP_TITLE="LumaDrop"
