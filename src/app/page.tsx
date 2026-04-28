@@ -3,15 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Camera, Download, Filter, Heart, Images, Lock, LogIn, Share2, Sparkles, Trash2, Upload } from "lucide-react";
+import { ArrowUpRight, Camera, Download, Filter, Heart, Images, Lock, LogIn, Share2, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLumaStore } from "@/store/luma-store";
 import { formatBytes } from "@/lib/utils";
 
 export default function HomePage() {
-  const { photos, albums } = useLumaStore();
-  const activePhotos = photos.filter((photo) => !photo.deletedAt);
+  const { photos, albums, user } = useLumaStore();
+  const myPhotos = photos.filter((photo) => !user || photo.userId === user.id);
+  const myAlbums = albums.filter((album) => !user || album.userId === user.id);
+  const activePhotos = myPhotos.filter((photo) => !photo.deletedAt);
   const recent = activePhotos.slice(0, 4);
   const totalSize = activePhotos.reduce((sum, photo) => sum + photo.size, 0);
 
@@ -49,9 +51,9 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <Link href="/login">
-                <LogIn className="h-4 w-4" />
-                邮箱登录
+              <Link href={user ? "/account" : "/login"}>
+                {user ? <UserRound className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+                {user ? "个人中心" : "邮箱登录"}
               </Link>
             </Button>
           </div>
@@ -74,7 +76,7 @@ export default function HomePage() {
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat icon={<Camera />} label="照片" value={`${activePhotos.length}`} />
-        <Stat icon={<Images />} label="相册" value={`${albums.length}`} />
+        <Stat icon={<Images />} label="相册" value={`${myAlbums.length}`} />
         <Stat icon={<Heart />} label="收藏" value={`${activePhotos.filter((photo) => photo.favorite).length}`} />
         <Stat icon={<Download />} label="容量" value={formatBytes(totalSize)} />
       </section>
@@ -112,7 +114,7 @@ export default function HomePage() {
           <Quick href="/albums" icon={<Share2 />} title="私密分享" text="公开/密码/下载权限一处配置" />
           <Quick href="/trash" icon={<Trash2 />} title="回收站" text="删除后保留 7 天，支持恢复、永久删除和清空" />
           <Quick href="/settings" icon={<Lock />} title="品牌设置" text="浅色深色、存储驱动和隐私偏好" />
-          <Quick href="/login" icon={<LogIn />} title="登录方式" text="邮箱验证码登录（需配置 Resend）" />
+          <Quick href={user ? "/account" : "/login"} icon={user ? <UserRound /> : <LogIn />} title={user ? "个人中心" : "登录方式"} text={user ? "查看账号、照片统计和退出登录" : "邮箱验证码登录（需配置 Resend）"} />
         </div>
       </section>
     </div>

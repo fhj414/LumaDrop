@@ -12,16 +12,18 @@ import { useLumaStore } from "@/store/luma-store";
 export function PreviewClient() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { photos, toggleFavorite, downloadPhotos } = useLumaStore();
-  const activeIndex = photos.findIndex((photo) => photo.id === params.id);
-  const photo = photos[activeIndex] ?? photos[0];
+  const { photos, user, toggleFavorite, downloadPhotos } = useLumaStore();
+  const visiblePhotos = photos.filter((photo) => !photo.deletedAt && (!user || photo.userId === user.id));
+  const activeIndex = visiblePhotos.findIndex((photo) => photo.id === params.id);
+  const photo = visiblePhotos[activeIndex] ?? visiblePhotos[0];
   const y = useMotionValue(0);
   const opacity = useTransform(y, [0, 220], [1, 0.35]);
   const scale = useTransform(y, [0, 220], [1, 0.92]);
 
   if (!photo) return null;
-  const previous = photos[(activeIndex - 1 + photos.length) % photos.length];
-  const next = photos[(activeIndex + 1) % photos.length];
+  const displayIndex = Math.max(activeIndex, 0);
+  const previous = visiblePhotos[(displayIndex - 1 + visiblePhotos.length) % visiblePhotos.length];
+  const next = visiblePhotos[(displayIndex + 1) % visiblePhotos.length];
 
   return (
     <div className="fixed inset-0 z-50 bg-black text-white">
@@ -30,7 +32,7 @@ export function PreviewClient() {
           <X className="h-5 w-5" />
         </Button>
         <span className="text-sm text-white/72">
-          {activeIndex + 1} / {photos.length}
+          {displayIndex + 1} / {visiblePhotos.length}
         </span>
         <Button
           variant="ghost"

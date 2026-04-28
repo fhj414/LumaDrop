@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { Camera, Grid2X2, Home, Images, LogIn, Settings, Trash2, Upload } from "lucide-react";
+import { Camera, Grid2X2, Home, Images, LogIn, Settings, Trash2, Upload, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLumaStore } from "@/store/luma-store";
 
@@ -20,7 +20,6 @@ const desktopNav = [
   { href: "/photos", label: "照片筛选" },
   { href: "/albums", label: "相册" },
   { href: "/trash", label: "回收站" },
-  { href: "/login", label: "登录" },
   { href: "/settings", label: "设置" }
 ];
 
@@ -28,6 +27,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hasPurgedTrash = useRef(false);
   const isImmersive = pathname.startsWith("/preview");
+  const user = useLumaStore((state) => state.user);
 
   useEffect(() => {
     if (hasPurgedTrash.current) return;
@@ -67,6 +67,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
             <Link
+              href={user ? "/account" : "/login"}
+              className={cn(
+                "rounded-full px-3 py-2 text-sm font-medium transition",
+                pathname.startsWith(user ? "/account" : "/login")
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              {user ? user.name : "登录"}
+            </Link>
+            <Link
               href="/upload"
               className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-glow"
             >
@@ -74,11 +85,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <Link
-            href="/login"
+            href={user ? "/account" : "/login"}
             className="flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-foreground sm:hidden"
-            aria-label="登录"
+            aria-label={user ? "个人中心" : "登录"}
           >
-            <LogIn className="h-5 w-5" />
+            {user ? <UserRound className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
           </Link>
         </div>
       </header>

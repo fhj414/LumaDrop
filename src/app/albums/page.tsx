@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLumaStore } from "@/store/luma-store";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function AlbumsPage() {
-  const { albums, createAlbum } = useLumaStore();
+  const { albums, createAlbum, user } = useLumaStore();
+  const myAlbums = useMemo(() => albums.filter((album) => !user || album.userId === user.id), [albums, user]);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -44,10 +45,17 @@ export default function AlbumsPage() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {albums.map((album) => (
+        {myAlbums.map((album) => (
           <AlbumCard key={album.id} album={album} />
         ))}
       </div>
+
+      {myAlbums.length === 0 && (
+        <div className="rounded-3xl border border-dashed bg-card p-8 text-center">
+          <p className="font-medium">还没有相册</p>
+          <p className="mt-1 text-sm text-muted-foreground">上传照片后，LumaDrop 会自动为当前账号生成相册。</p>
+        </div>
+      )}
     </div>
   );
 }

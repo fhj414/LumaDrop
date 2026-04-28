@@ -1,5 +1,6 @@
 export type Photo = {
   id: string;
+  userId?: string;
   title: string;
   url: string;
   width: number;
@@ -34,6 +35,7 @@ export type LumaUser = {
 
 export type Album = {
   id: string;
+  userId?: string;
   title: string;
   description: string;
   coverPhotoId?: string;
@@ -44,6 +46,7 @@ export type Album = {
 
 export type Share = {
   id: string;
+  userId?: string;
   token: string;
   albumId?: string;
   photoId?: string;

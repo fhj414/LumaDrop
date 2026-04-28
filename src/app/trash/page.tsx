@@ -10,8 +10,8 @@ import { useLumaStore } from "@/store/luma-store";
 const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
 export default function TrashPage() {
-  const { photos, restorePhotos, hardDelete, emptyTrash } = useLumaStore();
-  const trashed = photos.filter((photo) => photo.deletedAt).sort((a, b) => {
+  const { photos, user, restorePhotos, hardDelete, emptyTrash } = useLumaStore();
+  const trashed = photos.filter((photo) => (!user || photo.userId === user.id) && photo.deletedAt).sort((a, b) => {
     return new Date(b.deletedAt ?? 0).getTime() - new Date(a.deletedAt ?? 0).getTime();
   });
 

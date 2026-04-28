@@ -8,9 +8,9 @@ import { useLumaStore } from "@/store/luma-store";
 
 export default function AlbumDetailPage() {
   const params = useParams<{ id: string }>();
-  const { albums, photos } = useLumaStore();
-  const album = albums.find((item) => item.id === params.id);
-  const albumPhotos = photos.filter((photo) => photo.albumId === params.id);
+  const { albums, photos, user } = useLumaStore();
+  const album = albums.find((item) => item.id === params.id && (!user || item.userId === user.id));
+  const albumPhotos = photos.filter((photo) => photo.albumId === params.id && (!user || photo.userId === user.id));
 
   if (!album) return <div className="rounded-3xl border bg-card p-8">相册不存在</div>;
 

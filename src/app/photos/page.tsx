@@ -11,7 +11,9 @@ import type { PhotoCategory } from "@/types/lumadrop";
 
 export default function PhotosPage() {
   const photos = useLumaStore((state) => state.photos);
-  const trashCount = photos.filter((photo) => photo.deletedAt).length;
+  const user = useLumaStore((state) => state.user);
+  const myPhotos = useMemo(() => photos.filter((photo) => !user || photo.userId === user.id), [photos, user]);
+  const trashCount = myPhotos.filter((photo) => photo.deletedAt).length;
   const [query, setQuery] = useState("");
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [category, setCategory] = useState<PhotoCategory | "all">("all");
@@ -22,7 +24,7 @@ export default function PhotosPage() {
     const day = 24 * 60 * 60 * 1000;
     const keyword = query.trim().toLowerCase();
 
-    return photos
+    return myPhotos
       .filter((photo) => {
         if (photo.deletedAt) return false;
         const taken = new Date(photo.takenAt ?? photo.uploadedAt).getTime();
@@ -44,7 +46,7 @@ export default function PhotosPage() {
         const right = new Date(b.takenAt ?? b.uploadedAt).getTime();
         return sortMode === "newest" ? right - left : left - right;
       });
-  }, [category, photos, query, sortMode, timeFilter]);
+  }, [category, myPhotos, query, sortMode, timeFilter]);
 
   return (
     <div className="space-y-4">

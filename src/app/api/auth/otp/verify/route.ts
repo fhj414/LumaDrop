@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { verifyOtp } from "@/lib/auth/otp-store";
 
 type VerifyOtpBody = {
@@ -24,10 +25,11 @@ export async function POST(request: Request) {
   if (!ok) {
     return NextResponse.json({ error: "Invalid or expired verification code." }, { status: 401 });
   }
+  const userId = `${channel}-${crypto.createHash("sha256").update(normalizedTarget).digest("hex").slice(0, 16)}`;
   return NextResponse.json({
     ok: true,
     user: {
-      id: "u-authenticated",
+      id: userId,
       name: channel === "phone" ? `手机用户 ${normalizedTarget.slice(-4)}` : normalizedTarget.split("@")[0],
       email: channel === "email" ? normalizedTarget : undefined,
       phone: channel === "phone" ? normalizedTarget : undefined,

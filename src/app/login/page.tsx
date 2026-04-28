@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Camera, Loader2, Mail } from "lucide-react";
+import { Camera, Loader2, LogOut, Mail, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import { useLumaStore } from "@/store/luma-store";
 export default function LoginPage() {
   const router = useRouter();
   const loginWithUser = useLumaStore((state) => state.loginWithUser);
+  const user = useLumaStore((state) => state.user);
+  const logout = useLumaStore((state) => state.logout);
   const [email, setEmail] = useState("");
   const [emailCode, setEmailCode] = useState("");
   const [emailSent, setEmailSent] = useState(false);
@@ -19,6 +21,40 @@ export default function LoginPage() {
 
   const normalizedEmail = email.trim().toLowerCase();
   const canSendEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+
+  if (user) {
+    return (
+      <div className="mx-auto flex min-h-[72dvh] max-w-md items-center">
+        <Card className="w-full overflow-hidden">
+          <CardContent className="p-6">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-foreground text-background">
+                <UserRound className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-semibold">已登录</h1>
+                <p className="truncate text-sm text-muted-foreground">{user.email ?? user.phone ?? user.name}</p>
+              </div>
+            </div>
+            <Button className="w-full" onClick={() => router.push("/account")}>
+              进入个人中心
+            </Button>
+            <Button
+              variant="outline"
+              className="mt-3 w-full"
+              onClick={() => {
+                logout();
+                setMessage("已退出登录。");
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              退出登录
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   async function sendOtp(targetEmail: string) {
     const target = targetEmail.trim().toLowerCase();

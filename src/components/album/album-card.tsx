@@ -10,9 +10,10 @@ import type { Album } from "@/types/lumadrop";
 
 export function AlbumCard({ album }: { album: Album }) {
   const allPhotos = useLumaStore((state) => state.photos);
+  const user = useLumaStore((state) => state.user);
   const photos = useMemo(
-    () => allPhotos.filter((photo) => photo.albumId === album.id && !photo.deletedAt),
-    [allPhotos, album.id]
+    () => allPhotos.filter((photo) => photo.albumId === album.id && !photo.deletedAt && (!user || photo.userId === user.id)),
+    [allPhotos, album.id, user]
   );
   const cover = photos.find((photo) => photo.id === album.coverPhotoId) ?? photos[0];
 

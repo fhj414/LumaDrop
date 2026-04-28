@@ -13,9 +13,26 @@ function normalizePhoto(photo: Photo): Photo {
   const seed = mockPhotos.find((item) => item.id === photo.id);
   return {
     ...photo,
+    userId: photo.userId ?? seed?.userId ?? demoUser.id,
     takenAt: photo.takenAt ?? seed?.takenAt ?? photo.uploadedAt,
     category: photo.category ?? seed?.category ?? "other",
     tags: photo.tags ?? seed?.tags ?? []
+  };
+}
+
+function normalizeAlbum(album: Album): Album {
+  const seed = mockAlbums.find((item) => item.id === album.id);
+  return {
+    ...album,
+    userId: album.userId ?? seed?.userId ?? demoUser.id
+  };
+}
+
+function normalizeShare(share: Share): Share {
+  const seed = mockShares.find((item) => item.id === share.id);
+  return {
+    ...share,
+    userId: share.userId ?? seed?.userId ?? demoUser.id
   };
 }
 
@@ -58,9 +75,9 @@ type LumaState = {
 export const useLumaStore = create<LumaState>()(
   persist(
     (set, get) => ({
-      photos: mockPhotos,
-      albums: mockAlbums,
-      shares: mockShares,
+      photos: mockPhotos.map(normalizePhoto),
+      albums: mockAlbums.map(normalizeAlbum),
+      shares: mockShares.map(normalizeShare),
       selectedIds: [],
       selectionMode: false,
       gridMode: "grid",
@@ -71,9 +88,31 @@ export const useLumaStore = create<LumaState>()(
         set({ user: { id: "u-demo", name: `手机用户 ${phone.slice(-4)}`, phone, provider: "phone" } }),
       loginWithWechat: () =>
         set({ user: { id: "u-demo", name: "微信创作者", provider: "wechat" } }),
-      loginWithUser: (user) => set({ user }),
+      loginWithUser: (user) =>
+        set((state) => ({
+          user,
+          photos: state.photos.map((photo) =>
+            state.user?.id === "u-authenticated" && photo.userId === "u-authenticated"
+              ? { ...photo, userId: user.id }
+              : photo
+          ),
+          albums: state.albums.map((album) =>
+            state.user?.id === "u-authenticated" && album.userId === "u-authenticated"
+              ? { ...album, userId: user.id }
+              : album
+          ),
+          shares: state.shares.map((share) =>
+            state.user?.id === "u-authenticated" && share.userId === "u-authenticated"
+              ? { ...share, userId: user.id }
+              : share
+          )
+        })),
       logout: () => set({ user: null }),
-      addPhotos: (photos) => set((state) => ({ photos: [...photos, ...state.photos] })),
+      addPhotos: (photos) =>
+        set((state) => {
+          const ownerId = state.user?.id ?? demoUser.id;
+          return { photos: [...photos.map((photo) => ({ ...photo, userId: ownerId })), ...state.photos] };
+        }),
       toggleFavorite: (photoId) =>
         set((state) => ({
           photos: state.photos.map((photo) =>
@@ -93,6 +132,7 @@ export const useLumaStore = create<LumaState>()(
       createAlbum: (input, photoIds = []) => {
         const album: Album = {
           id: `a-${Date.now()}`,
+          userId: get().user?.id ?? demoUser.id,
           coverPhotoId: photoIds[0],
           createdAt: new Date().toISOString(),
           ...input
@@ -155,15 +195,18 @@ export const useLumaStore = create<LumaState>()(
         }),
       emptyTrash: () =>
         set((state) => ({
-          photos: state.photos.filter((photo) => !photo.deletedAt),
+          photos: state.photos.filter((photo) => {
+            const belongsToCurrentUser = !state.user || photo.userId === state.user.id;
+            return !belongsToCurrentUser || !photo.deletedAt;
+          }),
           selectedIds: [],
           selectionMode: false
         })),
       resetDemoData: () =>
         set({
-          photos: mockPhotos,
-          albums: mockAlbums,
-          shares: mockShares,
+          photos: mockPhotos.map(normalizePhoto),
+          albums: mockAlbums.map(normalizeAlbum),
+          shares: mockShares.map(normalizeShare),
           selectedIds: [],
           selectionMode: false,
           gridMode: "grid",
@@ -172,6 +215,7 @@ export const useLumaStore = create<LumaState>()(
       createShare: (input) => {
         const share: Share = {
           id: `s-${Date.now()}`,
+          userId: get().user?.id ?? demoUser.id,
           token: makeToken(),
           createdAt: new Date().toISOString(),
           ...input
@@ -209,13 +253,13 @@ export const useLumaStore = create<LumaState>()(
     }),
     {
       name: "lumadrop-store",
-      version: 2,
+      version: 3,
       migrate: (persistedState) => {
         const state = persistedState as Partial<LumaState>;
         return {
           photos: removeLocalOnlyUploads((state.photos ?? mockPhotos).map(normalizePhoto)),
-          albums: state.albums ?? mockAlbums,
-          shares: state.shares ?? mockShares,
+          albums: (state.albums ?? mockAlbums).map(normalizeAlbum),
+          shares: (state.shares ?? mockShares).map(normalizeShare),
           user: state.user ?? demoUser,
           gridMode: state.gridMode ?? "grid"
         };
