@@ -4,16 +4,23 @@ import { verifyOtp } from "@/lib/auth/otp-store";
 type VerifyOtpBody = {
   channel?: "phone" | "email";
   target?: string;
+  email?: string;
+  phone?: string;
   code?: string;
 };
 
 export async function POST(request: Request) {
   const body = (await request.json()) as VerifyOtpBody;
-  if (!body.channel || !body.target || !body.code) {
+  const channel = body.channel ?? (body.email ? "email" : body.phone ? "phone" : undefined);
+  const target = (body.target ?? body.email ?? body.phone)?.trim();
+  const code = body.code?.trim();
+
+  if (!channel || !target || !code) {
     return NextResponse.json({ error: "Missing channel, target or code." }, { status: 400 });
   }
 
-  const ok = await verifyOtp(body.channel, body.target, body.code);
+  const normalizedTarget = channel === "email" ? target.toLowerCase() : target;
+  const ok = await verifyOtp(channel, normalizedTarget, code);
   if (!ok) {
     return NextResponse.json({ error: "Invalid or expired verification code." }, { status: 401 });
   }
@@ -21,10 +28,10 @@ export async function POST(request: Request) {
     ok: true,
     user: {
       id: "u-authenticated",
-      name: body.channel === "phone" ? `手机用户 ${body.target.slice(-4)}` : body.target.split("@")[0],
-      email: body.channel === "email" ? body.target : undefined,
-      phone: body.channel === "phone" ? body.target : undefined,
-      provider: body.channel
+      name: channel === "phone" ? `手机用户 ${normalizedTarget.slice(-4)}` : normalizedTarget.split("@")[0],
+      email: channel === "email" ? normalizedTarget : undefined,
+      phone: channel === "phone" ? normalizedTarget : undefined,
+      provider: channel
     }
   });
 }

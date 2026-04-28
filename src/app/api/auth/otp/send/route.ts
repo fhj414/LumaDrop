@@ -5,20 +5,30 @@ import { sendEmailCode, sendSmsCode } from "@/lib/auth/providers";
 type SendOtpBody = {
   channel?: "phone" | "email";
   target?: string;
+  email?: string;
+  phone?: string;
 };
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as SendOtpBody;
-    if (!body.channel || !body.target) {
+    const channel = body.channel ?? (body.email ? "email" : body.phone ? "phone" : undefined);
+    const target = (body.target ?? body.email ?? body.phone)?.trim();
+
+    if (!channel || !target) {
       return NextResponse.json({ error: "Missing channel or target." }, { status: 400 });
     }
 
-    const code = await createOtp(body.channel, body.target);
+    if (channel === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+    }
+
+    const normalizedTarget = channel === "email" ? target.toLowerCase() : target;
+    const code = await createOtp(channel, normalizedTarget);
     const result =
-      body.channel === "phone"
-        ? await sendSmsCode(body.target, code)
-        : await sendEmailCode(body.target, code);
+      channel === "phone"
+        ? await sendSmsCode(normalizedTarget, code)
+        : await sendEmailCode(normalizedTarget, code);
 
     return NextResponse.json({
       ok: true,

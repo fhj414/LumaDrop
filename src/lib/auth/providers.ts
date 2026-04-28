@@ -48,7 +48,14 @@ export async function sendEmailCode(email: string, code: string) {
         from,
         to: email,
         subject: "Your LumaDrop verification code",
-        text: `Your LumaDrop verification code is ${code}. It expires in 5 minutes.`
+        text: `Your LumaDrop verification code is ${code}. It expires in 5 minutes.`,
+        html: `
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;color:#111827">
+            <p>Your LumaDrop verification code is:</p>
+            <p style="font-size:28px;font-weight:700;letter-spacing:4px;margin:12px 0">${code}</p>
+            <p style="color:#6b7280">This code expires in 5 minutes. If you did not request it, you can ignore this email.</p>
+          </div>
+        `
       })
     });
   } catch (error) {

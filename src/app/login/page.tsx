@@ -17,19 +17,28 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const normalizedEmail = email.trim().toLowerCase();
+  const canSendEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+
   async function sendOtp(targetEmail: string) {
+    const target = targetEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
+      setMessage("请输入有效的邮箱地址。");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     try {
       const response = await fetch("/api/auth/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: targetEmail })
+        body: JSON.stringify({ channel: "email", target })
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "验证码发送失败");
       setEmailSent(true);
-      setMessage("验证码已发送，请查收。");
+      setMessage(`验证码已发送到 ${target}，5 分钟内有效。`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "验证码发送失败");
     } finally {
@@ -38,13 +47,20 @@ export default function LoginPage() {
   }
 
   async function verifyOtp(targetEmail: string, code: string) {
+    const target = targetEmail.trim().toLowerCase();
+    const cleanCode = code.trim();
+    if (!target || !cleanCode) {
+      setMessage("请输入邮箱和验证码。");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     try {
       const response = await fetch("/api/auth/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: targetEmail, code })
+        body: JSON.stringify({ channel: "email", target, code: cleanCode })
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "验证码校验失败");
@@ -74,12 +90,18 @@ export default function LoginPage() {
           <div className="space-y-3">
             <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" />
             <div className="flex gap-2">
-              <Input inputMode="numeric" value={emailCode} onChange={(event) => setEmailCode(event.target.value)} placeholder="邮箱验证码" />
-              <Button variant="outline" onClick={() => sendOtp(email)} disabled={loading || !email}>
+              <Input
+                inputMode="numeric"
+                maxLength={6}
+                value={emailCode}
+                onChange={(event) => setEmailCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="邮箱验证码"
+              />
+              <Button variant="outline" onClick={() => sendOtp(email)} disabled={loading || !canSendEmail}>
                 {emailSent ? "重发" : "获取"}
               </Button>
             </div>
-            <Button className="w-full" onClick={() => verifyOtp(email, emailCode)} disabled={loading || !email || !emailCode}>
+            <Button className="w-full" onClick={() => verifyOtp(email, emailCode)} disabled={loading || !normalizedEmail || emailCode.length !== 6}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
               邮箱登录
             </Button>
